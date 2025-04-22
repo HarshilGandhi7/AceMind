@@ -3,9 +3,7 @@ import { google } from "@ai-sdk/google";
 import { db } from "@/firebase/admin";
 import { interviewCovers } from "@/constants";
 
-export async function GET() {
-  return Response.json({ message: "Hello Get route!" }, { status: 200 });
-}
+
 
 export async function POST(request: Request) {
   const randomCover =
