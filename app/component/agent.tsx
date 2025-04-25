@@ -1,6 +1,9 @@
+"use client"
+
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 import React from "react";
+import { useRouter } from "next/navigation";
 
 const CALL_STATUS = {
   INACTIVE: "INACTIVE",
@@ -10,6 +13,7 @@ const CALL_STATUS = {
 };
 
 const Agent = ({ userName, userId, type }: AgentProps) => {
+  const router= useRouter();
   const isSpeaking = true;
   const currentCallStatus = CALL_STATUS.FINISHED;
   const messages = [
@@ -52,7 +56,12 @@ const Agent = ({ userName, userId, type }: AgentProps) => {
       {messages.length > 0 && (
         <div className="transcript-border">
           <div className="transcript">
-            <p key={lastMessage} className={cn('transition-opacity duration-500 opacity-0,animete-fadeIn opa')}>
+            <p
+              key={lastMessage}
+              className={cn(
+                "transition-opacity duration-500 opacity-0,animete-fadeIn opa"
+              )}
+            >
               {lastMessage}
             </p>
           </div>
