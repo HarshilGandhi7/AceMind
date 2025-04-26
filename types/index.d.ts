@@ -101,3 +101,8 @@ interface TechIconProps {
   techStack: string[];
 }
 
+interface Message {
+  content:string,
+  sender: "user" | "ai" | "system"
+}
+

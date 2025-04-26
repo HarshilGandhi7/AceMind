@@ -1,9 +1,10 @@
-"use client"
+"use client";
 
 import { cn } from "@/lib/utils";
 import Image from "next/image";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { vapi } from "@/lib/actions/vapi.sdk";
 
 const CALL_STATUS = {
   INACTIVE: "INACTIVE",
@@ -13,14 +14,77 @@ const CALL_STATUS = {
 };
 
 const Agent = ({ userName, userId, type }: AgentProps) => {
-  const router= useRouter();
-  const isSpeaking = true;
-  const currentCallStatus = CALL_STATUS.FINISHED;
-  const messages = [
-    "Hello, I am your AI interviewer.",
-    "I will ask you a series of questions.",
-  ];
-  const lastMessage = messages[messages.length - 1];
+  const router = useRouter();
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [callStatus, setcallStatus] = useState(CALL_STATUS.INACTIVE);
+  const [messages, setMessages] = useState<Message[]>([]);
+
+  useEffect(() => {
+    const onCall = () => {
+      setcallStatus(CALL_STATUS.ACTIVE);
+    };
+    const onDisconnect = () => {
+      setcallStatus(CALL_STATUS.FINISHED);
+    };
+    const onMessage = (newMessage: Message) => {
+      setMessages((prevMessages) => [...prevMessages, newMessage]);
+    };
+
+    const onError = (error: Error) => {
+      console.error("Error:", error);
+      setcallStatus(CALL_STATUS.FINISHED);
+    };
+
+    const onSpeechStart = () => {
+      setIsSpeaking(true);
+    };
+    const onSpeechEnd = () => {
+      setIsSpeaking(false);
+    };
+
+    vapi.on("call-start", onCall);
+    vapi.on("call-end", onDisconnect);
+    vapi.on("message", onMessage);
+    vapi.on("error", onError);
+    vapi.on("speech-start", onSpeechStart);
+    vapi.on("speech-end", onSpeechEnd);
+
+    return () => {
+      vapi.off("call-start", onCall);
+      vapi.off("call-end", onDisconnect);
+      vapi.off("message", onMessage);
+      vapi.off("error", onError);
+      vapi.off("speech-start", onSpeechStart);
+      vapi.off("speech-end", onSpeechEnd);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (callStatus === CALL_STATUS.FINISHED) {
+      router.push("/");
+    }
+  }, [callStatus]);
+
+  const handleCall = async () => {
+    try {
+      const response = await vapi.start(process.env.NEXT_PUBLIC_ASSISTANT_API_KEY!, {
+        variableValues: {
+          username: userName,
+          userid: userId,
+        },
+      }); 
+      
+
+    } catch (error) {
+      setcallStatus(CALL_STATUS.FINISHED);
+    }
+  };
+
+  const handleDisconnect = async () => {
+    console.log(messages);
+    setcallStatus(CALL_STATUS.FINISHED);
+    vapi.stop();
+  };
 
   return (
     <>
@@ -57,32 +121,34 @@ const Agent = ({ userName, userId, type }: AgentProps) => {
         <div className="transcript-border">
           <div className="transcript">
             <p
-              key={lastMessage}
+              key={messages.length - 1}
               className={cn(
                 "transition-opacity duration-500 opacity-0,animete-fadeIn opa"
               )}
             >
-              {lastMessage}
+              {messages[messages.length - 1]?.content}
             </p>
           </div>
         </div>
       )}
 
       <div className="w-full flex justify-center">
-        {currentCallStatus !== CALL_STATUS.ACTIVE ? (
-          <button className="relative btn-call">
+        {callStatus !== CALL_STATUS.ACTIVE ? (
+          <button className="relative btn-call" onClick={handleCall}>
             <span
               className={cn("absolute animate-ping rounded-full opacity-75")}
             />
             <span>
-              {currentCallStatus === CALL_STATUS.INACTIVE ||
-              currentCallStatus === CALL_STATUS.FINISHED
+              {callStatus === CALL_STATUS.INACTIVE ||
+              callStatus === CALL_STATUS.FINISHED
                 ? "Call"
                 : ". . ."}
             </span>
           </button>
         ) : (
-          <button className="btn-disconnect">End</button>
+          <button className="btn-disconnect" onClick={handleDisconnect}>
+            End
+          </button>
         )}
       </div>
     </>
