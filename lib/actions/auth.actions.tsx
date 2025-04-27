@@ -4,7 +4,7 @@ import { cookies } from "next/headers";
 import { db, auth } from "../../firebase/admin";
 
 export async function SignUp(params: SignUpParams) {
-  const { uid,name, email, password } = params;
+  const { uid, name, email, password } = params;
 
   try {
     // Check if user already exists
@@ -91,18 +91,18 @@ export async function GetCurrentUser(): Promise<User | null> {
     const userId = decodedClaims.user_id;
     const userRecord = await db.collection("users").doc(userId).get();
     if (!userRecord) return null;
-    return{
+    return {
       ...userRecord.data(),
       name: userRecord.data()?.name,
       id: userId,
-    } as User
+    } as User;
   } catch (e) {
     console.error("Error getting current user", e);
     return null;
   }
 }
 
-export async function isAuthenticated(){
+export async function isAuthenticated() {
   const user = await GetCurrentUser();
   return !!user;
 }

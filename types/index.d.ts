@@ -48,6 +48,7 @@ interface InterviewCardProps {
   finalized: boolean;
   techstack: string[];
   createdAt?: string;
+  coverImage?: string;
 }
 
 interface AgentProps {
@@ -100,9 +101,3 @@ interface InterviewFormProps {
 interface TechIconProps {
   techStack: string[];
 }
-
-interface Message {
-  content:string,
-  sender: "user" | "ai" | "system"
-}
-

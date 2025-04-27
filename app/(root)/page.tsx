@@ -2,10 +2,17 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import Image from "next/image";
-import { dummyInterviews } from "@/constants";
+// import { dummyInterviews } from "@/constants";
 import InterviewCard from "../component/InterviewCard";
+import {
+  getAllInterviews,
+  getYourInterviewData,
+} from "@/lib/actions/general.actions";
 
-const Page = () => {
+const Page = async () => {
+  const YourinterviewData = await getYourInterviewData();
+  const allInterviewData = await getAllInterviews();
+
   return (
     <>
       <section className="card-cta">
@@ -30,13 +37,20 @@ const Page = () => {
       </section>
 
       <section className="flex flex-col gap-6 mt-8">
-        <h2 className="text-4xl font-bold">Your Past Interviews</h2>
+        <h2 className="text-4xl font-bold">Your Personalized Interviews</h2>
         <div className="interviews-section">
-          {dummyInterviews.map((interview) => (
-            <InterviewCard key={interview.id} {...interview} />
+          {YourinterviewData?.map((interview) => (
+            <InterviewCard
+              key={`past-${interview.id}`}
+              interviewId={interview.id}
+              {...interview}
+            />
           ))}
-          {dummyInterviews.length === 0 && (
-            <p className="text-lg text-gray-500">No interviews yet</p>
+          {YourinterviewData?.length === 0 && (
+            <p className="text-lg text-gray-500">
+              {" "}
+              No interviews yet. Please create your own Personalized interview.
+            </p>
           )}
         </div>
       </section>
@@ -44,12 +58,16 @@ const Page = () => {
       <section className="flex flex-col gap-6 mt-8">
         <h2>Take an interview</h2>
         <div className="interviews-section">
-          {dummyInterviews.map((interview) => (
-            <InterviewCard key={interview.id} {...interview} />
+          {allInterviewData?.map((interview) => (
+            <InterviewCard
+              key={`all-${interview.id}`}
+              interviewId={interview.id}
+              {...interview}
+            />
           ))}
-          {dummyInterviews.length === 0 && (
+          {allInterviewData?.length === 0 && (
             <p className="text-lg text-gray-500">
-              There are no interviews available
+              No community interviews available.
             </p>
           )}
         </div>

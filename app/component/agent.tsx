@@ -5,6 +5,54 @@ import Image from "next/image";
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { vapi } from "@/lib/actions/vapi.sdk";
+import { interviewer } from "@/constants";
+
+enum MessageTypeEnum {
+  TRANSCRIPT = "transcript",
+  STATUS_UPDATE = "status-update",
+}
+
+enum MessageRoleEnum {
+  ASSISTANT = "assistant",
+  USER = "user",
+}
+
+enum TranscriptMessageTypeEnum {
+  FINAL = "final",
+  INTERIM = "interim",
+}
+
+interface MessageType {
+  TRANSCRIPT: "transcript";
+  STATUS_UPDATE: "status-update";
+}
+
+interface MessageRole {
+  ASSISTANT: "assistant";
+  USER: "user";
+}
+
+interface TranscriptMessageType {
+  FINAL: "final";
+  INTERIM: "interim";
+}
+
+interface TranscriptMessage {
+  type: MessageType["TRANSCRIPT"];
+  role: MessageRole["ASSISTANT"] | MessageRole["USER"];
+  transcriptType:
+    | TranscriptMessageType["FINAL"]
+    | TranscriptMessageType["INTERIM"];
+  transcript: string;
+}
+
+interface StatusMessage {
+  type: MessageType["STATUS_UPDATE"];
+  status: string;
+  endedReason?: string;
+}
+
+type Message = TranscriptMessage | StatusMessage;
 
 const CALL_STATUS = {
   INACTIVE: "INACTIVE",
@@ -13,7 +61,7 @@ const CALL_STATUS = {
   FINISHED: "FINISHED",
 };
 
-const Agent = ({ userName, userId, type }: AgentProps) => {
+const Agent = ({ userName, userId, type,interviewId,questions}: AgentProps) => {
   const router = useRouter();
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [callStatus, setcallStatus] = useState(CALL_STATUS.INACTIVE);
@@ -59,22 +107,53 @@ const Agent = ({ userName, userId, type }: AgentProps) => {
     };
   }, []);
 
+  const handleFeedback=async()=>{
+    const {success,id}={
+      success:true,
+      id:"1234"
+    }
+    if(success && interviewId){
+      router.push(`/${interviewId}/feedback`);
+    }else{
+      console.log("Error in feedback submission");
+      router.push("/");
+    }
+  }
   useEffect(() => {
     if (callStatus === CALL_STATUS.FINISHED) {
-      router.push("/");
+      if(type === "generate") {
+        router.push("/");
+      }else{
+        handleFeedback();
+      }
     }
   }, [callStatus]);
 
   const handleCall = async () => {
     try {
-      const response = await vapi.start(process.env.NEXT_PUBLIC_ASSISTANT_API_KEY!, {
-        variableValues: {
-          username: userName,
-          userid: userId,
-        },
-      }); 
-      
+      if(type === "generate") {
+        const response = await vapi.start(
+          process.env.NEXT_PUBLIC_ASSISTANT_API_KEY!,
+          {
+            variableValues: {
+              username: userName,
+              userid: userId,
+            },
+          }
+        );
+      }else{
+        let formattedQuestions = '';
+        if(questions){
+          formattedQuestions = questions.map((question)=>`- ${question}`)
+          .join('\n');
+        }
 
+        await vapi.start(interviewer,{
+          variableValues:{
+            questions: formattedQuestions,
+          }
+        })
+      }
     } catch (error) {
       setcallStatus(CALL_STATUS.FINISHED);
     }
@@ -85,6 +164,11 @@ const Agent = ({ userName, userId, type }: AgentProps) => {
     setcallStatus(CALL_STATUS.FINISHED);
     vapi.stop();
   };
+
+  const latest_message =
+    messages[messages.length - 1]?.type === "transcript"
+      ? (messages[messages.length - 1] as TranscriptMessage).transcript
+      : "";
 
   return (
     <>
@@ -118,7 +202,13 @@ const Agent = ({ userName, userId, type }: AgentProps) => {
       </div>
 
       {messages.length > 0 && (
-        <div className="transcript-border">
+        <div
+          className={cn(
+            "transcript-border",
+            type === "interview" ? "my-8" : "my-0"
+          )}
+        >
+          {" "}
           <div className="transcript">
             <p
               key={messages.length - 1}
@@ -126,13 +216,18 @@ const Agent = ({ userName, userId, type }: AgentProps) => {
                 "transition-opacity duration-500 opacity-0,animete-fadeIn opa"
               )}
             >
-              {messages[messages.length - 1]?.content}
+              {latest_message}
             </p>
           </div>
         </div>
       )}
 
-      <div className="w-full flex justify-center">
+      <div
+        className={cn(
+          "w-full flex justify-center",
+          type === "interview" ? "mt-8" : "mt-0"
+        )}
+      >
         {callStatus !== CALL_STATUS.ACTIVE ? (
           <button className="relative btn-call" onClick={handleCall}>
             <span

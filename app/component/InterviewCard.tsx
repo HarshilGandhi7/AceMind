@@ -16,8 +16,8 @@ const InterviewCard = async ({
   questions,
   finalized,
   createdAt,
+  coverImage,
 }: InterviewCardProps) => {
-  const randomCover = interviewCovers[Math.floor(Math.random() * interviewCovers.length)];
   
   const feedback = null; // TODO: Fetch feedback data based on interviewId
   const formattedDate = dayjs(createdAt || Date.now()).format("DD MMM YYYY");
@@ -32,7 +32,7 @@ const InterviewCard = async ({
               <p className="badge-text">{type}</p>
             </div>
             <Image
-              src={randomCover}
+              src={coverImage || '/covers/default.jpg'}
               alt="cover"
               width={90}
               height={90}
