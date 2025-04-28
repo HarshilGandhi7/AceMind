@@ -2,6 +2,7 @@
 
 import { cookies } from "next/headers";
 import { db, auth } from "../../firebase/admin";
+import { redirect } from "next/navigation";
 
 export async function SignUp(params: SignUpParams) {
   const { uid, name, email, password } = params;
@@ -105,4 +106,21 @@ export async function GetCurrentUser(): Promise<User | null> {
 export async function isAuthenticated() {
   const user = await GetCurrentUser();
   return !!user;
+}
+
+
+export async function SignOut() {
+  try {
+    const cookieStore =await cookies();
+    cookieStore.set("session", "", {
+      path: "/",
+      maxAge: 0, 
+      httpOnly: true,
+      sameSite: "lax",
+    });
+    return {success:true};
+  } catch (error) {
+    console.error("Error signing out", error);
+    return redirect("/");
+  }
 }
