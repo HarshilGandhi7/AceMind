@@ -5,6 +5,8 @@ import { interviewCovers } from "@/constants";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import DisplayTechIcons from "./displayTechIcons";
+import { db } from "@/firebase/admin";
+import { GetCurrentUser } from "@/lib/actions/auth.actions";
 
 const InterviewCard = async ({
   interviewId,
@@ -18,10 +20,48 @@ const InterviewCard = async ({
   createdAt,
   coverImage,
 }: InterviewCardProps) => {
-  
-  const feedback = null; // TODO: Fetch feedback data based on interviewId
+  const User=await GetCurrentUser();
+  const fetchData = async () => {
+    try {
+      const feedback = await db
+        .collection("feedback")
+        .where("interviewId", "==", interviewId)
+        .where("userId", "==", User?.id)
+        .get();
+
+      if (feedback.empty) {
+        console.log("No feedback found for this interview and user.");
+        return null;
+      }
+
+      const feedbackDoc = feedback.docs[0];
+      const feedbackData = feedbackDoc.data();
+      if (
+        feedbackData.interviewId === interviewId &&
+        feedbackData.userId === userId
+      ) {
+        return {
+          score: feedbackData.totalScore,
+          id: feedbackDoc.id,
+        };
+      } else {
+        console.log("No valid feedback matching criteria.");
+        return null;
+      }
+    } catch (error) {
+      console.error("Error fetching feedback:", error);
+      return null;
+    }
+  };
+
+  const feedbackData = await fetchData();
+  const feedbackScore = feedbackData?.score;
+  const feedbackId = feedbackData?.id;
+
   const formattedDate = dayjs(createdAt || Date.now()).format("DD MMM YYYY");
-  const interviewUrl = feedback ? `/interview/${interviewId}/feedback` : `/interview/${interviewId}`;
+  const interviewUrl = feedbackId
+    ? `/interview/${feedbackId}/feedback`
+    : `/interview/${interviewId}`;
 
   return (
     <div>
@@ -32,7 +72,7 @@ const InterviewCard = async ({
               <p className="badge-text">{type}</p>
             </div>
             <Image
-              src={coverImage || '/covers/default.jpg'}
+              src={coverImage || "/covers/default.jpg"}
               alt="cover"
               width={90}
               height={90}
@@ -41,24 +81,31 @@ const InterviewCard = async ({
             <h3 className="mt-5 capitalize">{role} Interview</h3>
             <div className="flex flex-row gap-5 mt-3">
               <div className="flex flex-row gap-2">
-                <Image src="/calendar.svg" alt="calendar" width={22} height={22} />
+                <Image
+                  src="/calendar.svg"
+                  alt="calendar"
+                  width={22}
+                  height={22}
+                />
                 <p>{formattedDate}</p>
               </div>
               <div className="flex flex-row gap-2 items-center">
                 <Image src="/star.svg" alt="star" width={22} height={22} />
-                <p>{feedback || "---"}/100</p>
+                <p>{feedbackScore || "---"}/100</p>
               </div>
             </div>
 
             <p className="line-clamp-2 mt-5">
-              {feedback || "You haven't taken the interview yet. Take it now to improve your skills"}
+              {feedbackData
+                ? "You have taken the interview. Check your report for detailed feedback."
+                : "You haven't taken the interview yet. Take it now to improve your skills."}
             </p>
 
             <div className="flex flex-row justify-between items-center mt-4">
               <DisplayTechIcons techStack={techstack} />
               <Link href={interviewUrl}>
                 <Button className="btn-primary">
-                  {feedback ? 'Check Feedback' : 'View Interview'}
+                  {feedbackData ? "Check Feedback" : "View Interview"}
                 </Button>
               </Link>
             </div>

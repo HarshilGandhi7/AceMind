@@ -6,6 +6,7 @@ import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { vapi } from "@/lib/actions/vapi.sdk";
 import { interviewer } from "@/constants";
+import { createFeedback } from "@/lib/actions/general.actions";
 
 enum MessageTypeEnum {
   TRANSCRIPT = "transcript",
@@ -61,7 +62,13 @@ const CALL_STATUS = {
   FINISHED: "FINISHED",
 };
 
-const Agent = ({ userName, userId, type,interviewId,questions}: AgentProps) => {
+const Agent = ({
+  userName,
+  userId,
+  type,
+  interviewId,
+  questions,
+}: AgentProps) => {
   const router = useRouter();
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [callStatus, setcallStatus] = useState(CALL_STATUS.INACTIVE);
@@ -107,23 +114,31 @@ const Agent = ({ userName, userId, type,interviewId,questions}: AgentProps) => {
     };
   }, []);
 
-  const handleFeedback=async()=>{
-    const {success,id}={
-      success:true,
-      id:"1234"
-    }
-    if(success && interviewId){
-      router.push(`/${interviewId}/feedback`);
-    }else{
+  const handleFeedback = async () => {
+    const transcriptData = messages
+      .filter((msg) => msg.type === "transcript")
+      .map((msg) => ({
+        role: msg.role,
+        content: msg.transcript,
+      }));
+    const result = await createFeedback({
+      interviewId: interviewId || "",
+      userId: userId || "",
+      transcript: transcriptData,
+    });
+    console.log(result)
+    if (result && result.success && result.id) {
+      router.push(`/interview/${result.id}/feedback`);
+    } else {
       console.log("Error in feedback submission");
       router.push("/");
     }
-  }
+  };
   useEffect(() => {
     if (callStatus === CALL_STATUS.FINISHED) {
-      if(type === "generate") {
+      if (type === "generate") {
         router.push("/");
-      }else{
+      } else {
         handleFeedback();
       }
     }
@@ -131,7 +146,7 @@ const Agent = ({ userName, userId, type,interviewId,questions}: AgentProps) => {
 
   const handleCall = async () => {
     try {
-      if(type === "generate") {
+      if (type === "generate") {
         const response = await vapi.start(
           process.env.NEXT_PUBLIC_ASSISTANT_API_KEY!,
           {
@@ -141,18 +156,19 @@ const Agent = ({ userName, userId, type,interviewId,questions}: AgentProps) => {
             },
           }
         );
-      }else{
-        let formattedQuestions = '';
-        if(questions){
-          formattedQuestions = questions.map((question)=>`- ${question}`)
-          .join('\n');
+      } else {
+        let formattedQuestions = "";
+        if (questions) {
+          formattedQuestions = questions
+            .map((question) => `- ${question}`)
+            .join("\n");
         }
 
-        await vapi.start(interviewer,{
-          variableValues:{
+        await vapi.start(interviewer, {
+          variableValues: {
             questions: formattedQuestions,
-          }
-        })
+          },
+        });
       }
     } catch (error) {
       setcallStatus(CALL_STATUS.FINISHED);
