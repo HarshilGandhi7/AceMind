@@ -21,10 +21,9 @@ export async function POST(request: Request) {
           { status: 500 }
         );
       }
-    }
-    else if (file.type.includes("wordprocessingml")) {
+    } else if (file.type.includes("wordprocessingml")) {
       try {
-        const result = await mammoth.extractRawText({ arrayBuffer });
+        const result = await mammoth.extractRawText({ buffer });
         text = result.value;
       } catch (docxError: any) {
         console.error("DOCX processing error:", docxError);
@@ -33,19 +32,17 @@ export async function POST(request: Request) {
           { status: 500 }
         );
       }
-    }
-    else {
+    } else {
       return NextResponse.json(
         { error: "Unsupported file type" },
         { status: 400 }
       );
     }
-    
-    return NextResponse.json({ 
-      success: true,
-      text: text.trim() 
-    });
 
+    return NextResponse.json({
+      success: true,
+      text: text.trim(),
+    });
   } catch (error: any) {
     console.error("Error details:", error);
     return NextResponse.json(
@@ -54,4 +51,3 @@ export async function POST(request: Request) {
     );
   }
 }
-
