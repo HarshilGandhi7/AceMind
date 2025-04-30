@@ -56,11 +56,12 @@ Analysis requirements:
 7. Never return the original resume text
 
 Special instructions:
-- Format for voice assistant delivery (no special characters)
-- Prioritize changes by impact on ATS scoring
-- Include both quick fixes and long-term improvements
-- Compare against top performers in ${role} positions
-- Provide 3-4 links to online resources related to specific (${role}) role to help the user understand best practices. Ensure the links are functional and relevant to the role.
+- The score should be out of 10 with a specific weighted formula: 70% based on relevance to the target role (${role}) and 30% based on content optimization and keyword usage.
+- Do NOT assess document formatting aspects such as margins, fonts, spacing, or visual layout.
+- Focus only on content, keywords, section organization, and relevance to the ${role} position.
+- Prioritize changes by impact on keyword optimization and content quality
+- Include both quick fixes and long-term improvements to the substance of the resume
+- Compare against top performers in ${role} positions based on skills and experience, not formatting
 `;
 
     const { text: analysis } = await generateText({
