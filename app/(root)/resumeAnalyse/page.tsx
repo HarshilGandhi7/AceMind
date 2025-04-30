@@ -36,7 +36,6 @@ export default function ResumeUploader() {
         method: "POST",
         body: formData,
       });
-      console.log(res);
       const data = await res.json();
       if (data.text) {
         setText(data.text);

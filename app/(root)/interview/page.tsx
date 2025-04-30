@@ -4,9 +4,6 @@ import { GetCurrentUser } from "@/lib/actions/auth.actions";
 
 const page = async () => {
   const user = await GetCurrentUser();
-  console.log(user);
-
-
   return (
     <>
       <h3>Interview Generation</h3>

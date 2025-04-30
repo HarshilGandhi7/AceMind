@@ -48,7 +48,6 @@ export async function POST(request: Request) {
     };
 
     await db.collection("interviews").add(Interview);
-    console.log("Interview added to Firestore:", Interview);
 
     return Response.json({
       message: "Questions generated and saved successfully",

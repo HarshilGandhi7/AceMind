@@ -1,45 +1,38 @@
 import { NextResponse } from "next/server";
-import * as fs from 'fs/promises';
-import * as path from 'path';
-import * as os from 'os';
-import { v4 as uuidv4 } from 'uuid';
-import pdfTextExtract from "pdf-text-extract";
 import mammoth from "mammoth";
+import pdfParse from "pdf-parse";
 
 export async function POST(request: Request) {
   try {
     const formData = await request.formData();
     const file = formData.get("file") as File;
-    const buffer = Buffer.from(await file.arrayBuffer());
+    const arrayBuffer = await file.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
 
     let text = "";
-
     if (file.type === "application/pdf") {
-      const tempDir = os.tmpdir();
-      const tempFilePath = path.join(tempDir, `${uuidv4()}.pdf`);
-      
       try {
-        // Write buffer to temp file
-        await fs.writeFile(tempFilePath, buffer);
-        
-        // Now use pdfTextExtract with the file path
-        text = await new Promise((resolve, reject) => {
-          pdfTextExtract(tempFilePath as any, (err:any, pages:any) => {
-            if (err) return reject(err);
-            resolve(pages.join("\n"));
-          });
-        });
-        
-        // Clean up temp file
-        await fs.unlink(tempFilePath);
-      } catch (pdfError) {
+        const pdfData = await pdfParse(buffer);
+        text = pdfData.text;
+      } catch (pdfError: any) {
         console.error("PDF processing error:", pdfError);
-        throw pdfError;
+        return NextResponse.json(
+          { error: "Failed to parse PDF", details: pdfError.message },
+          { status: 500 }
+        );
       }
     }
     else if (file.type.includes("wordprocessingml")) {
-      const result = await mammoth.extractRawText({ buffer });
-      text = result.value;
+      try {
+        const result = await mammoth.extractRawText({ arrayBuffer });
+        text = result.value;
+      } catch (docxError: any) {
+        console.error("DOCX processing error:", docxError);
+        return NextResponse.json(
+          { error: "Failed to parse DOCX", details: docxError.message },
+          { status: 500 }
+        );
+      }
     }
     else {
       return NextResponse.json(
@@ -53,7 +46,7 @@ export async function POST(request: Request) {
       text: text.trim() 
     });
 
-  } catch (error:any) {
+  } catch (error: any) {
     console.error("Error details:", error);
     return NextResponse.json(
       { error: "Failed to parse file", details: error.message },
@@ -61,3 +54,4 @@ export async function POST(request: Request) {
     );
   }
 }
+
