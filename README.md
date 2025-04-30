@@ -1,36 +1,52 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+## AceMind - AI-Powered Career Preparation Platform
 
-## Getting Started
+🌟 Overview
+AceMind is an innovative career preparation platform designed to help job seekers excel in interviews and optimize their resumes using AI. Our tools provide personalized feedback, practice opportunities, and data-driven insights to maximize your chances of landing your dream job.
 
-First, run the development server:
+Live Demo: https://ace-mind.vercel.app/
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## ✨ Features
+# AI Interview Practice
+- Personalized Interview Simulations: Practice with AI interviewers tailored to specific roles and industries
+- Real-time Feedback: Receive instant analysis on your responses
+- Community Question Bank: Access interviews created by other users
+# Resume Analyzer
+- ATS Optimization: Check if your resume will pass Applicant Tracking Systems
+- Role-specific Analysis: Get tailored feedback based on your target position
+- Actionable Recommendations: Receive specific suggestions to improve your resume
+- Project Analysis: Get detailed feedback on how to better present your work experience
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+# 🛠️ Technology Stack
+- Framework: Next.js 13+ (App Router)
+- Styling: Tailwind CSS
+- UI Components: Shadcn UI
+- Authentication: NextAuth.js
+- AI Integration: Google Gemini API
+- File Parsing: PDF-parse, Mammoth.js
+- Deployment: Vercel
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+# 📱 Key Pages
+- Home Page: / - Overview of platform features
+- Interview Practice: /interview - Start a new interview session
+- Resume Analysis: /resumeAnalyse - Upload and analyze your resume
+- Analysis Results: /resumeAnalyse/[id] - View detailed resume feedback
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 📝 Usage Examples
+# Practicing for an Interview
+1. Navigate to the Interview Practice section
+2. Select a role or create a custom interview
+3. Answer the questions provided by the AI interviewer
+4. Receive feedback on your responses and areas for improvement
 
-## Learn More
+# Analyzing Your Resume
+1.Go to the Resume Analysis section
+2.Upload your resume (PDF or DOCX format)
+3.Specify your target role
+4.Review the comprehensive analysis including:
+- Overall ATS compatibility score
+- Strengths and weaknesses
+- Keyword optimization suggestions
+- Project-specific feedback
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+# 🤝 Contributing
+We welcome contributions to AceMind! Please feel free to submit a pull request or open an issue on our GitHub repository.
