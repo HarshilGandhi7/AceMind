@@ -20,6 +20,7 @@ Live Demo: https://ace-mind.vercel.app/
 - Framework: Next.js 13+ (App Router)
 - Styling: Tailwind CSS
 - UI Components: Shadcn UI
+- Voice Agent: Vapi
 - Authentication: NextAuth.js
 - AI Integration: Google Gemini API
 - File Parsing: PDF-parse, Mammoth.js
